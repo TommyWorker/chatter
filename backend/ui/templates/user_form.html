@@ -1,0 +1,196 @@
+{% import 'common.tpl' as c %}
+<html lang="ja">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>ユーザ情報</title>
+
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/icon/bootstrap-icons-1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/static/css/custom.css" rel="stylesheet">
+
+</head>
+
+<body class="">
+    <form id="form_main" method="post" action="/user_entry" class="needs-validation" novalidate
+        onsubmit="return disp_onsubmit()">
+        <div class="sticky-top bg-white">
+            {{ c.common_header(login_user, mode | default("")) }}
+            <div class="container">
+                <!-- メッセージ表示領域 -->
+                <div class="" id="div_message_area">
+                    {% if result=="complete" %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{sys_msg}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% elif result=="error" %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{sys_msg}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% elif result=="info" %}
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        {{sys_msg}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+                </div>
+                <!-- ヘッダー部（メインボタン領域まで） -->
+                <div class="mt-3 bg-white w-100 border-bottom border-dark row mb-2">
+                    <div class="col-auto">
+                        {% if mode == "disp" %}
+                        <h3>ユーザ情報 参照</h3>
+                        {% elif mode=="new"%}
+                        <h3>ユーザ情報 新規登録</h3>
+                        {% elif mode=="edit" %}
+                        <h3>ユーザ情報 編集</h3>
+                        {% endif %}
+                    </div>
+                    <div class="col text-end">
+                        {% if login_user.authority_code == 99 %}
+                        <a href="/user/list"
+                            class="btn btn-outline-secondary btn-sm mb-2 px-4 {% if mode!='disp' %}confirm-link{% endif %}">
+                            <i class="bi bi-search"></i> 一 覧</a>
+                        {% endif %}
+                        {% if mode == "edit" %}
+                        <a href="/user/{{user.id}}/disp"
+                            class="btn btn-outline-secondary btn-sm mb-2 px-4 confirm-link">
+                            <i class="bi bi-card-text"></i> 参 照</a>
+                        {% endif %}
+                        {% if mode!="disp" and login_user.authority_code == 99 %}
+                            <button type="submit" class="btn btn-primary btn-sm mb-2 px-4" id="btnEntry">
+                                <i class="bi bi-pencil-square"></i> 登 録</button>
+                        {% elif mode!="disp" and login_user.id == user.id %}
+                            <button type="submit" class="btn btn-primary btn-sm mb-2 px-4" id="btnEntry">
+                                <i class="bi bi-pencil-square"></i> 登 録</button>
+                        {% elif mode=="disp" %}
+                            {% if login_user.id == user.id or login_user.authority_code == 99 %}
+                            <a href="/user/{{user.id}}/edit" class="btn btn-outline-secondary btn-sm mb-2 px-4"><i
+                                    class="bi bi-pencil-square"></i>
+                                編 集</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <!-- 入力フォーム -->
+            <div class="mt-3 ms-1 me-4 row">
+                <div class="row m-2">
+                    <div class="form-group col-6">
+                        <label for="txt_mail_address" class="form-label">メールアドレス</label>
+                        {% if mode!="disp" %}
+                        <span class="badge bg-danger">必須</span>
+                        <input type="text" class="form-control" name="txt_mail_address" id="txt_mail_address"
+                            value="{{user.mail_address or ''}}" maxlength="514" required>
+                        <div class="invalid-feedback">
+                            必須入力項目です。
+                        </div>
+                        {% else %}
+                        <input type="text" class="form-control bg-light" name="txt_mail_address" id="txt_mail_address"
+                            value="{{user.mail_address or ''}}" readonly>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row m-2">
+                    <div class="form-group col-6">
+                        <label for="txt_user_name" class="form-label">ユーザ名</label>
+                        {% if mode!="disp" %}
+                        <span class="badge bg-danger">必須</span>
+                        <input type="text" class="form-control" name="txt_user_name" id="txt_user_name"
+                            value="{{user.user_name or ''}}" maxlength="140" required>
+                        <div class="invalid-feedback">
+                            必須入力項目です。
+                        </div>
+                        {% else %}
+                        <input type="text" class="form-control bg-light" name="txt_user_name" id="txt_user_name"
+                            readonly value="{{user.user_name or ''}}">
+                        {% endif %}
+                    </div>
+                </div>
+                {% if mode!="disp" %}
+                <div class="row m-2">
+                    <div class="form-group col-6">
+                        <label for="txt_password" class="form-label">
+                            パスワード{% if mode == "edit" %}（空の場合は変更なし）{% endif %}
+                        </label>
+                        {% if mode=="new" %}<span class="badge bg-danger">必須</span>{% endif %}
+                        <input type="password" class="form-control" name="txt_password" id="txt_password"
+                            value="" maxlength="30" {% if mode=="new" %}required{% endif %}>
+                        <div class="invalid-feedback">{% if mode=="new" %}必須入力項目です。{% endif %}</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if mode!="disp" %}
+                <div class="row m-2">
+                    <div class="form-group col-6">
+                        <label for="txt_password_confirm" class="form-label">
+                            パスワード（確認）
+                        </label>
+                        {% if mode=="new" %}<span class="badge bg-danger">必須</span>{% endif %}
+                        <input type="password" class="form-control" name="txt_password_confirm" id="txt_password_confirm"
+                            value="" maxlength="30" {% if mode=="new" %}required{% endif %}>
+                        <div class="invalid-feedback">{% if mode=="new" %}必須入力項目です。{% endif %}</div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="row m-2">
+                    <div class="form-group col-6">
+                        <label for="sel_auth_code" class="form-label">権限</label>
+                        {% if mode!="disp" and login_user.authority_code == 99 %}
+                        <span class="badge bg-danger">必須</span>
+                        <select class="form-control" name="sel_auth_code" id="sel_auth_code" required>
+                            {% for auth in auth_list %}
+                                <option value="{{ auth.code }}" {% if user.authority_code == auth.code %} selected {% endif %} >{{ auth.code_value }}</option>
+                            {% endfor %}
+                        </select>
+                        {% else %}
+                        <input type="text" class="form-control bg-light" readonly name="sel_auth_code" id="sel_auth_code"
+                            value="{{user.authority[0].code_value if user.authority and user.authority[0] else ''}}">
+                        {% endif %}
+                    </div>
+                </div>
+                {% if mode != "new" and login_user.authority_code == 99 %}
+                <div class="row m-2">
+                    <label for="chk_del_flag" class="form-group col">
+                        <input type="checkbox" class="form-check-input" name="chk_del_flag"
+                            {% if user.del_flag==True %} checked{% endif %} 
+                            {% if mode=="disp" %} disabled{% endif %}>
+                        削除フラグ
+                    </label>
+                </div>
+                {% endif %}
+                <div class="m-3">
+                    <div class="form-group">
+                        <label for="">
+                            最終更新者：{% if user.update_user is not none %}{{user.update_user}}{% endif %}
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="">
+                            最終更新日時：{% if user.update_date is not none %}
+                                            {{user.update_date.strftime('%Y-%m-%d %H:%M')}}
+                                        {% endif %}
+                        </label>
+                    </div>
+                    <!-- Topへ戻るボタン -->
+                    <button id="scrollToTopBtn" class="btn" type="button"><i class="bi bi-arrow-up"></i></button>
+                </div>
+
+                <!-- 隠しフィールド -->
+                <!--   ユーザid -->
+                <input type="hidden" class="form-control" value="{{user.id or ''}}" id="hdn_user_id" name="hdn_user_id">
+            </div>
+        </div>
+    </form>
+    
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/common.js"></script>
+    <script src="/static/js/user_form.js"></script>
+    
+</body>
