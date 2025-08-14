@@ -9,13 +9,13 @@
     {% endif %}
         <div class="container-fluid">
             <a class="navbar-brand" href="/">
-                <h2 class="text-white">XXXXXXシステム</h2>
+                <h2 class="text-white">Chatter</h2>
             </a>
             <div class="navbar-collapse col-auto" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto">
                     {% if login_user.authority_code >= 0 %}
                     <li class="nav-item mx-2">
-                        <a class="nav-link active text-white text-decoration-underline" href="/">トップページ</a>
+                        <a class="nav-link active text-white text-decoration-underline" href="/">Home</a>
                     </li>
                     {% endif %}
                     <li class="nav-item dropdown">

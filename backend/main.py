@@ -42,7 +42,7 @@ for filepath in router_directory.glob("*.py"):
 @app.get("/")
 def root(request: Request, login_user: User = Depends(auth.check_auth)):
     return templates.TemplateResponse(
-        "top.html",
+        "talk.html",
         {"request": request, "login_user": login_user},
     )
 
