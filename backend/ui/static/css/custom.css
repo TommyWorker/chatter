@@ -18,3 +18,53 @@
     white-space: pre-wrap;
 
 }
+
+
+/* トーク画面用 */
+        .chat-container {
+            max-width: 700px;
+            margin: 50px auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+            background: white;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .message {
+            max-width: 75%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            white-space: pre-wrap;
+        }
+        .message.sent {
+            background-color: #0d6efd;
+            color: white;
+            align-self: flex-end;
+        }
+        .message.received {
+            background-color: #e9ecef;
+            align-self: flex-start;
+        }
+        .sender-name {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 2px;
+        }
+        .chat-input {
+            border-top: 1px solid #ddd;
+            padding: 10px;
+        }
+        textarea {
+            resize: none;
+        }

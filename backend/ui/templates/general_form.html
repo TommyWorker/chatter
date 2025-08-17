@@ -2,26 +2,27 @@
 <html lang="ja">
 
 <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
     <title>マスタメンテナンス（汎用マスタ）</title>
 
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/icon/bootstrap-icons-1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="/static/css/custom.css" rel="stylesheet">
-
 </head>
 
-<body class="">
-    <form id="form_main" method="post" action="/general_entry" class="needs-validation" novalidate
-        onsubmit="return disp_onsubmit()">
-        <div class="sticky-top bg-white">
-            {{ c.common_header(login_user, mode | default("")) }}
+<body>
+<div class="d-flex">
+    <!-- サイドバー -->
+    {{ c.common_sidebar(login_user, mode | default("")) }}
+
+    <!-- メインコンテンツ -->
+    <div class="flex-grow-1 p-3">
+        <form id="form_main" method="post" action="/general_entry" class="needs-validation" novalidate
+              onsubmit="return disp_onsubmit()">
             <div class="container">
                 <!-- メッセージ表示領域 -->
-                <div class="" id="div_message_area">
+                <div id="div_message_area">
                     {% if result=="complete" %}
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{sys_msg}}
@@ -39,8 +40,9 @@
                     </div>
                     {% endif %}
                 </div>
-                <!-- ヘッダー部（メインボタン領域まで） -->
-                <div class="mt-3 bg-white w-100 border-bottom border-dark row mb-2">
+
+                <!-- ヘッダー部 -->
+                <div class="m-3 bg-white w-100 border-bottom border-dark row">
                     <div class="col-auto">
                         {% if mode == "disp" %}
                         <h3>マスタメンテナンス（汎用マスタ）参照</h3>
@@ -51,126 +53,135 @@
                     <div class="col text-end">
                         <a href="/general/list"
                             class="btn btn-outline-secondary btn-sm mb-2 px-4 {% if mode=='edit' %}confirm-link{% endif %}">
-                            <i class="bi bi-search"></i> 一 覧</a>
+                            <i class="bi bi-search"></i> 一 覧
+                        </a>
                         {% if mode == "edit" and general.code is not none and general.code != -1 %}
                         <a href="/general/{{general.category}}/{{general.code}}/disp"
                             class="btn btn-outline-secondary btn-sm mb-2 px-4 confirm-link">
-                            <i class="bi bi-card-text"></i> 参 照</a>
+                            <i class="bi bi-card-text"></i> 参 照
+                        </a>
                         {% endif %}
                         {% if mode=="edit" %}
                         <button type="submit" class="btn btn-primary btn-sm mb-2 px-4" id="btnEntry">
-                            <i class="bi bi-pencil-square"></i> 登 録</button>
+                            <i class="bi bi-pencil-square"></i> 登 録
+                        </button>
                         {% elif mode=="disp" %}
                         <a href="/general/{{general.category}}/{{general.code}}/edit"
-                            class="btn btn-outline-secondary btn-sm mb-2 px-4"><i class="bi bi-pencil-square"></i>
-                            編 集</a>
+                            class="btn btn-outline-secondary btn-sm mb-2 px-4">
+                            <i class="bi bi-pencil-square"></i> 編 集
+                        </a>
                         {% endif %}
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="container">
-            <!-- 入力フォーム -->
-            <div class="mt-3 ms-1 me-4 row">
-                <div class="row m-2">
-                    <div class="form-group col-6">
-                        <label for="form-control">カテゴリ</label>
-                        {% if mode == "edit" %}
-                        <span class="badge bg-danger">必須</span>
-                        <select name="sel_category" id="sel_category" {% if general.code is none or general.code==-1 %}
-                            class="form-control form-select" required {% else %} style="pointer-events: none;"
-                            class="form-control  bg-light" {% endif %}>
-                            <option value=""></option>
-                            {% for category in category_list %}
-                            <option class="form-control" value="{{category.category}}" {% if
-                                general.category==category.category %} selected {% endif %}>{{category.display_name}}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <div class="invalid-feedback">
-                            必須入力項目です。
+            <div class="container">
+                <!-- 入力フォーム -->
+                <div class="mt-3 ms-1 me-4 row">
+                    <!-- カテゴリ -->
+                    <div class="row m-2">
+                        <div class="form-group col-6">
+                            <label for="form-control">カテゴリ</label>
+                            {% if mode == "edit" %}
+                            <span class="badge bg-danger">必須</span>
+                            <select name="sel_category" id="sel_category"
+                                {% if general.code is none or general.code==-1 %}
+                                    class="form-control form-select" required
+                                {% else %}
+                                    style="pointer-events: none;" class="form-control bg-light"
+                                {% endif %}>
+                                <option value=""></option>
+                                {% for category in category_list %}
+                                <option value="{{category.category}}"
+                                        {% if general.category==category.category %} selected {% endif %}>
+                                    {{category.display_name}}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">必須入力項目です。</div>
+                            {% elif mode=="disp" %}
+                            <input type="text" class="form-control bg-light" readonly id="sel_category"
+                                   value="{{general.r_category.display_name}}">
+                            {% endif %}
                         </div>
-                        {% elif mode=="disp" %}
-                        <input type="text" class="form-control bg-light" readonly id="sel_category"
-                            value="{{general.r_category.display_name}}">
-                        {% endif %}
                     </div>
-                </div>
-                <div class="row m-2">
-                    <div class="form-group col-3">
-                        <label for="txt_code" class="form-label">コード</label>
-                        <input type="text" class="form-control bg-light" readonly id="txt_code" name="txt_code"
-                                value="{{general.code if general.code != None else ''}}">
-                    </div>
-                </div>
-                <div class="row m-2">
-                    <div class="form-group col-6">
-                        <label for="txt_code_value" class="form-label">名称</label>
-                        {% if mode == "edit" %}
-                        <span class="badge bg-danger">必須</span>
-                        <input type="text" class="form-control" name="txt_code_value" id="txt_code_value"
-                            value="{{general.code_value if general.code_value else ''}}" maxlength="200" required>
-                        <div class="invalid-feedback">
-                            必須入力項目です。
+                    <div class="row m-2">
+                        <div class="form-group col-3">
+                            <label for="txt_code" class="form-label">コード</label>
+                            <input type="text" class="form-control bg-light" readonly id="txt_code" name="txt_code"
+                                    value="{{general.code if general.code != None else ''}}">
                         </div>
-                        {% elif mode=="disp" %}
-                        <input type="text" class="form-control bg-light" readonly id="txt_code_value"
-                            value="{{general.code_value or ''}}">
-                        {% endif %}
                     </div>
-                </div>
-                <div class="row m-2">
-                    <div class="form-group col-3">
-                        <label for="txt_sort_key" class="form-label">ソートキー</label>
-                        {% if mode == "edit" %}
-                        <input type="number" class="form-control" name="txt_sort_key" id="txt_sort_key"
-                            value="{{general.sort_key if general.sort_key else 1000}}">
-                        <div class="invalid-feedback"></div>
-                        {% elif mode=="disp" %}
-                        <input type="text" class="form-control bg-light" readonly id="txt_sort_key"
-                            value="{{general.sort_key}}">
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="row m-2">
-                    <div class="form-group col">
-                        <label for="txt_remarks">備考</label>
-                        {% if mode == "edit" %}
-                        <textarea class="form-control" rows="5" name="txt_remarks" id="txt_remarks"
-                            maxlength="500">{{general.remarks or ''}}</textarea>
-                        {% elif mode=="disp" %}
-                        <div class="form-control bg-light multi-line" id="txt_remarks">{{general.remarks or ''}}
+                    <div class="row m-2">
+                        <div class="form-group col-6">
+                            <label for="txt_code_value" class="form-label">名称</label>
+                            {% if mode == "edit" %}
+                            <span class="badge bg-danger">必須</span>
+                            <input type="text" class="form-control" name="txt_code_value" id="txt_code_value"
+                                value="{{general.code_value if general.code_value else ''}}" maxlength="200" required>
+                            <div class="invalid-feedback">
+                                必須入力項目です。
+                            </div>
+                            {% elif mode=="disp" %}
+                            <input type="text" class="form-control bg-light" readonly id="txt_code_value"
+                                value="{{general.code_value or ''}}">
+                            {% endif %}
                         </div>
-                        {% endif %}
                     </div>
-                </div>
-                {% if general.code is not none and general.code != -1 %}
-                <div class="row m-2">
-                    <label for="chk_del_flag" class="form-group col">
-                        <input type="checkbox" class="form-check-input" name="chk_del_flag" {% if general.del_flag==True
-                            %} checked {% endif %} {% if mode=="disp" %} disabled {% endif %}>
-                        削除フラグ
-                    </label>
-                </div>
-                {% endif %}
-                <div class="row m-2">
-                    <div class="form-group col">
-                        <label for="txt_remarks">最終更新者：{% if general.update_user is not none %}{{general.update_user}}{%
-                            else %}{% endif %}</label>
+                    <div class="row m-2">
+                        <div class="form-group col-3">
+                            <label for="txt_sort_key" class="form-label">ソートキー</label>
+                            {% if mode == "edit" %}
+                            <input type="number" class="form-control" name="txt_sort_key" id="txt_sort_key"
+                                value="{{general.sort_key if general.sort_key else 1000}}">
+                            <div class="invalid-feedback"></div>
+                            {% elif mode=="disp" %}
+                            <input type="text" class="form-control bg-light" readonly id="txt_sort_key"
+                                value="{{general.sort_key}}">
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row m-2">
                         <div class="form-group col">
-                            <label for="txt_remarks">最終更新日時：{% if general.update_date is not none
-                                %}{{general.update_date.strftime('%Y-%m-%d %H:%M')}}{% else %}{% endif %}</label>
+                            <label for="txt_remarks">備考</label>
+                            {% if mode == "edit" %}
+                            <textarea class="form-control" rows="5" name="txt_remarks" id="txt_remarks"
+                                maxlength="500">{{general.remarks or ''}}</textarea>
+                            {% elif mode=="disp" %}
+                            <div class="form-control bg-light multi-line" id="txt_remarks">{{general.remarks or ''}}
+                            </div>
+                            {% endif %}
                         </div>
-                        <!-- Topへ戻るボタン -->
-                        <button id="scrollToTopBtn" class="btn" type="button"><i class="bi bi-arrow-up"></i></button>
+                    </div>
+                    {% if general.code is not none and general.code != -1 %}
+                    <div class="row m-2">
+                        <label for="chk_del_flag" class="form-group col">
+                            <input type="checkbox" class="form-check-input" name="chk_del_flag" {% if general.del_flag==True
+                                %} checked {% endif %} {% if mode=="disp" %} disabled {% endif %}>
+                            削除フラグ
+                        </label>
+                    </div>
+                    {% endif %}
+                    <div class="row m-2">
+                        <div class="form-group col">
+                            <label for="txt_remarks">最終更新者：{% if general.update_user is not none %}{{general.update_user}}{%
+                                else %}{% endif %}</label>
+                            <div class="form-group col">
+                                <label for="txt_remarks">最終更新日時：{% if general.update_date is not none
+                                    %}{{general.update_date.strftime('%Y-%m-%d %H:%M')}}{% else %}{% endif %}</label>
+                            </div>
+                            <!-- Topへ戻るボタン -->
+                            <button id="scrollToTopBtn" class="btn" type="button"><i class="bi bi-arrow-up"></i></button>
+                        </div>
                     </div>
                 </div>
-                <!-- 隠しフィールド -->
             </div>
-    </form>
+        </form>
+    </div>
+</div>
 
-    <script src="/static/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/common.js"></script>
-    <script src="/static/js/general_form.js"></script>
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/common.js"></script>
+<script src="/static/js/general_form.js"></script>
 
 </body>
+</html>

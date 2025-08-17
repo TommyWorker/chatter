@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import Integer, String, Unicode
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -13,12 +11,10 @@ class User(Base):
 
     __tablename__ = "m_user"
 
-    id: Mapped[Optional[int]] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     """id（Key）"""
 
-    mail_address: Mapped[str] = mapped_column(String(514), unique=True, nullable=True)
+    mail_address: Mapped[str] = mapped_column(String(514), unique=True, nullable=False)
     """メールアドレス"""
 
     user_name: Mapped[str] = mapped_column(Unicode(140), nullable=False)
@@ -37,3 +33,6 @@ class User(Base):
         viewonly=True,
         primaryjoin="and_(General.category == 'authority_code', foreign(General.code) == User.authority_code)",
     )
+    
+    # メンバーへリレーション
+    members = relationship("RoomMember", back_populates="user")

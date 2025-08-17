@@ -1,0 +1,120 @@
+{% import 'common.tpl' as c %}
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>チャットルーム</title>
+
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/icon/bootstrap-icons-1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/static/css/custom.css" rel="stylesheet">
+</head>
+
+<body>
+<div class="d-flex">
+    <!-- サイドバー -->
+    {{ c.common_sidebar(login_user, mode | default("")) }}
+
+    <!-- メインコンテンツ -->
+    <div class="flex-grow-1 p-3">
+        <form id="form_main" method="post" action="/room_entry" class="needs-validation" novalidate
+              onsubmit="return false;">
+            <div class="container">
+                <!-- メッセージ表示領域 -->
+                <div id="div_message_area">
+                    {% if result=="complete" %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{sys_msg}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% elif result=="error" %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{sys_msg}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% elif result=="info" %}
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        {{sys_msg}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- ヘッダー部 -->
+                <div class="m-3 bg-white w-75 border-bottom border-dark row">
+                    <div class="col-auto">
+                        {% if mode=="new"%}
+                        <h3>チャットルーム 新規登録</h3>
+                        {% elif mode=="edit" %}
+                        <h3>チャットルーム 編集</h3>
+                        {% endif %}
+                    </div>
+                    <div class="col text-end">
+                        <a href="/room/list"
+                            class="btn btn-outline-secondary btn-sm mb-2 px-4 {% if mode!='disp' %}confirm-link{% endif %}">
+                            <i class="bi bi-search"></i> 一 覧</a>
+                        <button type="submit" class="btn btn-primary btn-sm mb-2 px-4" id="btnEntry" onclick="disp_onsubmit();">
+                            <i class="bi bi-pencil-square"></i> 登 録
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 入力フォーム -->
+                <div class="mt-3 ms-1 me-4 row">
+                    <div class="row m-4">
+                        <div class="form-group col-8">
+                            <label for="lst_auth" class="form-label">チャットメンバー入力（複数可）</label>
+                            <input type="text" id="sel_member" list="lst_member" class="form-control" placeholder="メールアドレスを選択・入力してEnterクリック" autocomplete="off">
+                            <datalist id="lst_member">
+                                {% for member in member_list %}
+                                <option value="{{ member.mail_address }}" data-username="{{ member.user_name }}"></option>
+                                {% endfor %}
+                            </datalist>
+                            <!-- 選択済みのユーザを表示する場所 -->
+                            <div id="selectedArea" class="mt-2"></div>
+                        </div>
+                        <!-- 新規ユーザ登録の補足 -->
+                        <small class="text-muted d-block ms-3 p-2">
+                            選択肢にないメールアドレスは自動でシステムへ新規登録されます。<br>
+                            その場合の初期パスワードはメールアドレスと同じです。
+                        </small>
+
+                    </div>
+                    <div class="row m-4">
+                        <div class="form-group col-8">
+                            <hr>
+                            <label for="txt_remarks">備考</label>
+                            <textarea class="form-control" rows="3" name="txt_remarks" id="txt_remarks"
+                                maxlength="500">{{room.remarks or ''}}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="row m-4">
+                        <div class="form-group">
+                            <label>最終更新者：{% if room.update_user is not none %}{{room.update_user}}{% endif %}</label>
+                        </div>
+                        <div class="form-group">
+                            <label>最終更新日時：{% if room.update_date is not none %}
+                                    {{room.update_date.strftime('%Y-%m-%d %H:%M')}}
+                                {% endif %}</label>
+                        </div>
+                        <!-- Topへ戻るボタン -->
+                        <button id="scrollToTopBtn" class="btn" type="button"><i class="bi bi-arrow-up"></i></button>
+                    </div>
+
+                    <!-- 隠しフィールド -->
+                    <input type="hidden" class="form-control" value="{{room.id or ''}}" id="hdn_room_id" name="hdn_room_id">
+                    <div id="membersHiddenContainer"></div> <!-- メンバを設定 -->
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/common.js"></script>
+<script src="/static/js/room_form.js"></script>
+
+</body>
+</html>

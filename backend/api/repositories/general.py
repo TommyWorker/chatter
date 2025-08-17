@@ -34,16 +34,16 @@ class GeneralRepo:
 
     def find_list(
         self,
-        sel_category: Optional[str] = None,
-        txt_code_value: Optional[str] = None,
+        category: Optional[str] = None,
+        code_value: Optional[str] = None,
         offset: int = 0,
         limit: int = 10,
     ) -> Tuple[Sequence[General], int]:
         """
         指定した条件に合致する汎用マスタ情報を取得
             Args:
-                sel_category: カテゴリ（完全一致）
-                txt_code_value: 名称（部分一致）
+                category: カテゴリ（完全一致）
+                code_value: 名称（部分一致）
                 offset: 何件目から取得するか指定（全件表示する場合は-1を指定）
                 limit: 何件取得するか指定
             Returns:
@@ -55,10 +55,10 @@ class GeneralRepo:
             query = query.outerjoin(Category)
             query = query.where(Category.maintenance_flag == True)
 
-            if sel_category:
-                query = query.where(General.category == sel_category)
-            if txt_code_value:
-                query = query.where(General.code_value.contains(txt_code_value))
+            if category:
+                query = query.where(General.category == category)
+            if code_value:
+                query = query.where(General.code_value.contains(code_value))
 
             # カテゴリ、ソートキー、削除フラグで並び替え
             query = query.order_by(
@@ -77,12 +77,12 @@ class GeneralRepo:
 
             return general_list, rec_count
 
-    def find_by_code(self, p_code: int, p_category: str) -> General:
+    def find_by_code(self, code: int, category: str) -> General:
         """
         指定したcode,categoryの汎用マスタ情報を取得
             Args:
-                p_code: 汎用マスタコード
-                p_category: 値
+                code: 汎用マスタコード
+                category: 値
             Returns:
                 General: 取得した汎用マスタ情報
         """
@@ -90,7 +90,7 @@ class GeneralRepo:
             return (
                 session.scalars(
                     select(General).where(
-                        General.code == p_code, General.category == p_category
+                        General.code == code, General.category == category
                     )
                 )
                 .unique()

@@ -163,7 +163,7 @@ def check_user(user: User, mode: str) -> Tuple[bool, str]:
         Tuple2: エラーメッセージ
     """
 
-    # 新規処理の場合、アカウントコードの存在チェック
+    # 新規処理の場合、メールアドレスの存在チェック
     if mode == "new":
         user_repo = UserRepo()
         dmy_user, count = user_repo.find(user.mail_address)
