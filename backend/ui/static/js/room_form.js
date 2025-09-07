@@ -1,9 +1,10 @@
-// user_form.js
-// ユーザ入力画面で利用するjavascript関数群
+// room_form.js
+// ルーム入力画面で利用するjavascript関数群
 
 const member_input = document.getElementById("sel_member");
-const selectedArea = document.getElementById("selectedArea");
-const hiddenContainer = document.getElementById("membersHiddenContainer");
+const selected_area = document.getElementById("selected_area");
+const hidden_container = document.getElementById("membershidden_container");
+
 
 // Enter またはカンマでメンバー追加
 member_input.addEventListener("keydown", function(e) {
@@ -12,7 +13,7 @@ member_input.addEventListener("keydown", function(e) {
         e.preventDefault(); // フォーム送信防止
         const val = member_input.value.trim();
         if (val !== "") {
-            // datalist からユーザ名を取得できるか確認
+            // datalist からユーザ名を取得
             const option = Array.from(document.getElementById("lst_member").options)
                                 .find(opt => opt.value === val);
             const username = option ? option.dataset.username : "";
@@ -49,22 +50,53 @@ function addMemberTag(mail, username = "") {
     hidden.name = "members[]";
     hidden.value = mail;
 
-    badge.appendChild(hidden);
-    selectedArea.appendChild(badge);
-    hiddenContainer.appendChild(hidden);
+    hidden_container.appendChild(hidden);
+    badge.appendChild(removeBtn);;
+    selected_area.appendChild(badge);
+}
+
+// ページロード
+function page_init(){
+
+    
+
 }
 
 
+
 // 登録ボタン押下時
-function disp_onsubmit() {
+function send_data() {
 
     // 入力チェック
     if (!entry_check()) {
         return false;
     } 
 
-    // Submit
-    document.getElementById("form_main").submit();
+    // 入力値取得
+    const room_id = document.getElementById("hdn_room_id").value
+    const room_name = document.getElementById("txt_room_name").value
+    const remarks = document.getElementById("txt_remarks").value
+    /// hidden に入っている値を全部集める
+    const members = Array.from(document.querySelectorAll('input[name="members[]"]'))
+                     .map(input => input.value);
+
+
+    fetch("/room_entry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ room_id, members, room_name, remarks })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.result === "complete"){
+            disp_info(data.sys_msg, "div_message_area")
+        }else{
+            disp_alert(data.sys_msg, "div_message_area")
+        }
+    })
+    .catch(error => {
+        disp_alert(error, "div_message_area")
+    });
 
 }
 

@@ -1,6 +1,6 @@
 from typing import Optional, Sequence, Tuple
 
-from sqlalchemy import and_, func, select, asc, desc
+from sqlalchemy import and_, asc, desc, func, select
 
 from backend.api.entities.room import Room
 from backend.api.entities.room_member import RoomMember
@@ -38,18 +38,12 @@ class RoomRepo:
             query = query.where(Room.del_flag == False)
 
             if room_name:
-                query = query.where(
-                    Room.room_name.contains(room_name)
-                )
+                query = query.where(Room.room_name.contains(room_name))
             if member_id:
-                query = query.where(
-                    Room.members.any(RoomMember.user_id == member_id)
-                    )
+                query = query.where(Room.members.any(RoomMember.user_id == member_id))
 
             # 更新日で並び替え
-            query = query.order_by(
-                desc(Room.update_date)
-            )
+            query = query.order_by(desc(Room.update_date))
 
             # レコード件数取得
             count_query = select(func.count()).select_from(query.subquery())
@@ -72,23 +66,15 @@ class RoomRepo:
                 Room: 取得したルーム情報
         """
         with sql.Session() as session:
-            return (
-                session.scalars(
-                    select(Room).where(
-                        Room.id == id
-                    )
-                )
-                .unique()
-                .one()
-            )
+            return session.scalars(select(Room).where(Room.id == id)).unique().one()
 
-    def find_member(self, member_id: int) -> Sequence[User]:
-        '''
+    def find_member_in_target_user(self, member_id: int) -> Sequence[User]:
+        """
         指定したユーザIDが含まれるルームメンバー情報取得
                 member_id: メンバーID
             Returns:
                 Sequence: ヒットしたメンバのリスト
-        '''
+        """
 
         with sql.Session() as session:
             query = select(User).distinct()
@@ -98,13 +84,11 @@ class RoomRepo:
                     select(RoomMember.room_id).where(RoomMember.user_id == member_id)
                 )
             )
-            query = query.where(RoomMember.user_id == member_id)
-            
+
             # メールアドレスで並び替え
             query = query.order_by(asc(User.mail_address))
 
             return session.scalars(query).unique().all()
-
 
     def create(self, room: Room) -> int:
         """
@@ -116,7 +100,6 @@ class RoomRepo:
         """
         with sql.Session() as session:
             session.add(room)
-            session.add(room.room_member)
             session.commit()
             assert room.id is not None
             return room.id
@@ -131,11 +114,7 @@ class RoomRepo:
         """
         with sql.Session() as session:
             current_room = (
-                session.scalars(
-                    select(Room).where(Room.id == room.id)
-                )
-                .unique()
-                .one()
+                session.scalars(select(Room).where(Room.id == room.id)).unique().one()
             )
             current_room.room_name = room.room_name
             current_room.remarks = room.remarks
@@ -150,8 +129,6 @@ class RoomRepo:
 
         """
         with sql.Session() as session:
-            current_room = session.scalars(
-                select(Room).where(Room.id == room.id)
-            ).one()
+            current_room = session.scalars(select(Room).where(Room.id == room.id)).one()
             session.delete(current_room)
             session.commit()

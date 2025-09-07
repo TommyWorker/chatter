@@ -11,7 +11,7 @@
     <link href="/static/css/custom.css" rel="stylesheet">
 </head>
 
-<body>
+<body onload="page_init();">
 <div class="d-flex">
     <!-- サイドバー -->
     {{ c.common_sidebar(login_user, mode | default("")) }}
@@ -45,16 +45,16 @@
                 <div class="m-3 bg-white w-75 border-bottom border-dark row">
                     <div class="col-auto">
                         {% if mode=="new"%}
-                        <h3>チャットルーム 新規登録</h3>
+                        <h3>チャットルーム 登録</h3>
                         {% elif mode=="edit" %}
                         <h3>チャットルーム 編集</h3>
                         {% endif %}
                     </div>
                     <div class="col text-end">
                         <a href="/room/list"
-                            class="btn btn-outline-secondary btn-sm mb-2 px-4 {% if mode!='disp' %}confirm-link{% endif %}">
+                            class="btn btn-outline-secondary btn-sm mb-2 px-4">
                             <i class="bi bi-search"></i> 一 覧</a>
-                        <button type="submit" class="btn btn-primary btn-sm mb-2 px-4" id="btnEntry" onclick="disp_onsubmit();">
+                        <button type="submit" class="btn btn-primary btn-sm mb-2 px-4" id="btnEntry" onclick="send_data();">
                             <i class="bi bi-pencil-square"></i> 登 録
                         </button>
                     </div>
@@ -72,24 +72,29 @@
                                 {% endfor %}
                             </datalist>
                             <!-- 選択済みのユーザを表示する場所 -->
-                            <div id="selectedArea" class="mt-2"></div>
+                            <div id="selected_area" class="mt-2"></div>
                         </div>
                         <!-- 新規ユーザ登録の補足 -->
                         <small class="text-muted d-block ms-3 p-2">
                             選択肢にないメールアドレスは自動でシステムへ新規登録されます。<br>
                             その場合の初期パスワードはメールアドレスと同じです。
                         </small>
-
                     </div>
                     <div class="row m-4">
                         <div class="form-group col-8">
                             <hr>
+                            <label for="txt_room_name" class="form-label">ルーム名</label>
+                            <input type="text" class="form-control" name="txt_room_name" id="txt_room_name"
+                                value="{{room.room_name or ''}}" maxlength="100">
+                        </div>
+                    </div>
+                    <div class="row m-4">
+                        <div class="form-group col-8">
                             <label for="txt_remarks">備考</label>
                             <textarea class="form-control" rows="3" name="txt_remarks" id="txt_remarks"
                                 maxlength="500">{{room.remarks or ''}}</textarea>
                         </div>
                     </div>
-
                     <div class="row m-4">
                         <div class="form-group">
                             <label>最終更新者：{% if room.update_user is not none %}{{room.update_user}}{% endif %}</label>
@@ -105,7 +110,7 @@
 
                     <!-- 隠しフィールド -->
                     <input type="hidden" class="form-control" value="{{room.id or ''}}" id="hdn_room_id" name="hdn_room_id">
-                    <div id="membersHiddenContainer"></div> <!-- メンバを設定 -->
+                    <div id="membershidden_container"></div> <!-- メンバを設定 -->
                 </div>
             </div>
         </form>

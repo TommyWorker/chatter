@@ -21,4 +21,4 @@ class Room(Base):
     """備考"""
 
     # メンバーへリレーション
-    members = relationship("RoomMember", back_populates="room")
+    members = relationship("RoomMember", back_populates="room", cascade="all, delete-orphan")

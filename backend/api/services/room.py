@@ -1,14 +1,15 @@
-from typing import Optional, Sequence, Tuple, Dict
+from typing import Dict, Optional, Sequence, Tuple
 
 from backend.api.entities.room import Room
 from backend.api.entities.room_member import RoomMember
 from backend.api.entities.room_message import RoomMessage
 from backend.api.entities.user import User
 from backend.api.repositories.room import RoomRepo
+from backend.api.repositories.user import UserRepo
 from backend.api.std import func
 
 
-def find_rooms( 
+def find_rooms(
     room_name: Optional[str] = None,
     member_id: Optional[id] = None,
     offset: int = 0,
@@ -44,7 +45,29 @@ def get_room(id: int) -> Room:
     else:
         room_repo = RoomRepo()
         return room_repo.find_by_id(id)
-    
+
+
+def get_member_by_mail(mail_address: str) -> User:
+    """
+    アドレスからメンバ情報取得
+        Args:
+            mail_address: メールアドレス
+        Returns:
+            User: 取得したメンバ情報
+    """
+
+    user_repo = UserRepo()
+    user = user_repo.find_by_address(mail_address)
+    if not user:
+        user = User()
+        user.user_name = mail_address
+        user.mail_address = mail_address
+        user.hashed_password = mail_address
+        user.authority_code = 0
+        user_id = user_repo.create(user)
+        user = user_repo.find_by_id(user_id)
+    return user
+
 
 def get_selected_lists(login_user_id: id) -> Dict[str, Sequence[User]]:
     """
@@ -58,8 +81,38 @@ def get_selected_lists(login_user_id: id) -> Dict[str, Sequence[User]]:
 
     room_repo = RoomRepo()
 
-    member_list = room_repo.find_member(login_user_id)
+    member_list = room_repo.find_member_in_target_user(login_user_id)
 
     return {
-        "member": member_list,
+        "members": member_list,
     }
+
+
+def create_room(room: Room) -> Room:
+    """
+    ルーム情報 新規登録
+        Args:
+            room: 登録するルーム情報
+        Returns:
+            Room: 登録したルーム情報
+    """
+
+    room_repo = RoomRepo()
+    room_id = room_repo.create(room)
+    return room_repo.find_by_id(room_id)
+
+
+def update_room(room: Room) -> Room:
+    """
+    ルーム情報 更新
+        Args:
+            room: 更新するルーム情報
+        Returns:
+            room: 更新したルーム情報
+
+    """
+
+    room_repo = RoomRepo()
+    room_repo.update(room)
+    assert room.id is not None
+    return room_repo.find_by_id(room.id)

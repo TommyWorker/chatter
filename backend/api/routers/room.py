@@ -1,18 +1,28 @@
 import math
-from urllib.parse import unquote
-
 from datetime import datetime
 from os import getenv
+from typing import List, Optional
+from urllib.parse import unquote
 
 from fastapi import APIRouter, Cookie, Depends, Form, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 
 from backend.api.entities.room import Room
+from backend.api.entities.room_member import RoomMember
 from backend.api.entities.user import User
+from backend.api.services import auth
 from backend.api.services import room as s_room
 from backend.api.std import define, func
-from backend.api.services import auth
+
+
+# ルーム登録時の受信データのスキーマを定義
+class RoomEntry(BaseModel):
+    room_id: Optional[str] = None
+    members: List[str]
+    room_name: Optional[str] = None
+    remarks: Optional[str] = None
 
 
 # 初期設定
@@ -107,10 +117,10 @@ def room_form_edit(
     ルーム情報入力画面：ロード
     """
 
-    # ユーザクラスのインスタンス生成
+    # ルームクラスのインスタンス生成
     e_room = s_room.get_room(p_room_id)
 
-    # ユーザリスト取得
+    # メンバーリスト取得
     select_input_dict = s_room.get_selected_lists(login_user.id)
 
     return templates.TemplateResponse(
@@ -118,10 +128,52 @@ def room_form_edit(
         {
             "request": request,
             "room": e_room,
-            "member_list": select_input_dict["member"],
+            "member_list": select_input_dict["members"],
             "mode": mode,
             "result": "",
             "sys_msg": "",
             "login_user": login_user,
         },
     )
+
+
+@router.post("/room_entry")
+def room_entry(
+    data: RoomEntry,
+    login_user: User = Depends(auth.check_auth),
+):
+    """
+    ルーム情報入力画面：登録・更新処理
+    """
+
+    # ユーザクラスのインスタンス生成
+    e_room = s_room.get_room(int(data.room_id) if data.room_id != "" else 0)
+
+    # 入力値取得
+    e_room.room_name = data.room_name
+    e_room.remarks = data.remarks
+    e_room.members.append(RoomMember(user_id=login_user.id))
+    for member in data.members:
+        user = s_room.get_member_by_mail(member)
+        e_room.members.append(RoomMember(user_id=user.id))
+
+    # ▼登録処理
+    if e_room.id is None:
+        # ▼新規
+        e_room = s_room.create_room(e_room)
+        # リターンコード設定
+        sys_msg = "登録処理が正常に完了しました。"
+        result = "complete"
+
+    else:
+        # ▼更新
+        e_room = s_room.update_room(e_room)
+        # リターンコード設定
+        sys_msg = "更新処理が正常に完了しました。"
+        result = "complete"
+
+    return {
+        "result": result,
+        "sys_msg": sys_msg,
+        "login_user": login_user,
+    }

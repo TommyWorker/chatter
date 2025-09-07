@@ -104,7 +104,7 @@
                         </tr>
                     </thead>
                     <tbody class="table-group-divider">
-                        {% for user in user_list %}
+                        {% for room in room_list %}
                         <tr class="">
                             <td class="text-center align-middle text-nowrap p-1">
                                 <a href="/room/{{room.id}}/edit" role="button"
@@ -114,7 +114,7 @@
                             </td>
                             <td class="p-1 align-middle multi-line">{{room.room_name or ''}}</td>
                             <td class="p-1 align-middle multi-line">{{room.remarks or ''}}</td>
-                            {% if user.update_date is not none %}
+                            {% if room.update_date is not none %}
                             <td class="p-1 align-middle">{{room.update_date.strftime('%Y-%m-%d')}}</td>
                             {% else %}
                             <td class="p-1 align-middle"></td>
