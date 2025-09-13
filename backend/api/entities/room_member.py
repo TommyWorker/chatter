@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, ForeignKey
+from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.api.entities.base import Base
@@ -7,6 +7,7 @@ from backend.api.entities.base import Base
     RoomMember
 """
 
+
 class RoomMember(Base):
 
     __tablename__ = "t_room_member"
@@ -14,10 +15,14 @@ class RoomMember(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     """id（Key）"""
 
-    room_id: Mapped[int] = mapped_column(Integer, ForeignKey("t_room.id"), nullable=False)
+    room_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("t_room.id"), nullable=False
+    )
     """room_id """
 
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("m_user.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("m_user.id"), nullable=False
+    )
     """user_id """
 
     # ルームへリレーション
@@ -25,6 +30,6 @@ class RoomMember(Base):
 
     # メッセージへリレーション
     messages = relationship("RoomMessage", back_populates="members")
-    
+
     # ユーザへリレーション
-    user = relationship("User", back_populates="members")
+    user = relationship("User", back_populates="members", lazy="joined")

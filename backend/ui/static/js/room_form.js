@@ -4,7 +4,7 @@
 const member_input = document.getElementById("sel_member");
 const selected_area = document.getElementById("selected_area");
 const hidden_container = document.getElementById("membershidden_container");
-
+const room_id = document.getElementById("hdn_room_id");
 
 // Enter またはカンマでメンバー追加
 member_input.addEventListener("keydown", function(e) {
@@ -13,12 +13,15 @@ member_input.addEventListener("keydown", function(e) {
         e.preventDefault(); // フォーム送信防止
         const val = member_input.value.trim();
         if (val !== "") {
-            // datalist からユーザ名を取得
-            const option = Array.from(document.getElementById("lst_member").options)
-                                .find(opt => opt.value === val);
-            const username = option ? option.dataset.username : "";
-            addMemberTag(val, username);
-            member_input.value = "";
+            // エラーチェック
+            if(member_add_check(val)){
+                // datalist からユーザ名を取得
+                const option = Array.from(document.getElementById("lst_member").options)
+                                    .find(opt => opt.value === val);
+                const username = option ? option.dataset.username : "";
+                addMemberTag(val, username);
+                member_input.value = "";
+            }
         }
     }
 });
@@ -32,36 +35,46 @@ function addMemberTag(mail, username = "") {
     const displayText = username ? `${mail} (${username})` : mail;
     badge.textContent = displayText;
 
-    // 削除ボタン
-    const removeBtn = document.createElement("button");
-    removeBtn.type = "button";
-    removeBtn.className = "btn-close btn-close-white ms-2";
-    removeBtn.style.fontSize = "0.8em";
-    removeBtn.onclick = () => {
-    const hidden = badge.querySelector('input[type="hidden"]');
-    if(hidden) hidden.remove();
-        badge.remove();
-    };
-    badge.appendChild(removeBtn);
-
     // hidden input（サーバ送信用、メールアドレスのみ）
     const hidden = document.createElement("input");
     hidden.type = "hidden";
     hidden.name = "members[]";
     hidden.value = mail;
-
     hidden_container.appendChild(hidden);
-    badge.appendChild(removeBtn);;
+
+    // 削除ボタン
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "btn-close btn-close-white ms-2";
+    removeBtn.style.fontSize = "0.8em";
+
+    removeBtn.onclick = () => {
+        hidden.remove();   // ← hidden を必ず削除
+        badge.remove();    // badge 自体も削除
+    };
+
+    badge.appendChild(removeBtn);
     selected_area.appendChild(badge);
 }
 
 // ページロード
 function page_init(){
 
+    fetch("/room/" + room_id.value + "/edit/api")
+    .then(res => res.json())
+    .then(data => {
+        loadMembers(data.members);
+    });
     
 
 }
 
+// 既存登録メンバーをロード
+function loadMembers(membersData) {
+    membersData.forEach(m => {
+        addMemberTag(m.user.mail_address, m.user.user_name);
+    });
+}
 
 
 // 登録ボタン押下時
@@ -100,17 +113,30 @@ function send_data() {
 
 }
 
+function member_add_check(mail) {
+
+    disp_init("div_message_area");
+
+    // --- メール形式チェック ---
+    if (!is_email_string(mail)) {
+        disp_alert("メールアドレスの形式が不正です。", "div_message_area");
+        return false;
+    }
+
+    // --- 重複チェック ---
+    const existingEmails = Array.from(hidden_container.querySelectorAll('input[name="members[]"]'))
+                                .map(input => input.value);
+    if (existingEmails.includes(mail)) {
+        disp_alert("既に追加済みのメールアドレスです。", "div_message_area");
+        return false;
+    }
+
+    return true;
+}
+
+
 // 登録時入力チェック処理
 function entry_check() {
-
-    // メールアドレスの形式チェック
-    // const txt_mail_address = document.getElementById("txt_mail_address").value
-    // if (!is_string_empty(txt_mail_address)) {
-    //     if (!is_email_string(txt_mail_address)) {
-    //         disp_alert("メールアドレスの形式が不正です。", "div_message_area");
-    //         return false;
-    //     }
-    // }
 
     // エラーなし・正常終了
     return true;

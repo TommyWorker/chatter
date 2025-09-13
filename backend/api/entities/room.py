@@ -7,6 +7,7 @@ from backend.api.entities.base import Base
     Room
 """
 
+
 class Room(Base):
 
     __tablename__ = "t_room"
@@ -21,4 +22,6 @@ class Room(Base):
     """備考"""
 
     # メンバーへリレーション
-    members = relationship("RoomMember", back_populates="room", cascade="all, delete-orphan")
+    members = relationship(
+        "RoomMember", back_populates="room", lazy="joined", cascade="all, delete-orphan"
+    )

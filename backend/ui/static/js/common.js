@@ -88,6 +88,14 @@ function disp_alert(msg, position_id) {
 
 }
 
+// メッセージを初期化
+// position: 初期化する位置（idを指定）
+function disp_init(position_id) {
+
+    document.getElementById(position_id).innerHTML = ""
+
+}
+
 // 空白か判定
 // check_target: チェック対象文字列
 function is_string_empty(check_target) {

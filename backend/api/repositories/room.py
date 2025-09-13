@@ -6,6 +6,7 @@ from backend.api.entities.room import Room
 from backend.api.entities.room_member import RoomMember
 from backend.api.entities.room_message import RoomMessage
 from backend.api.entities.user import User
+from backend.api.repositories.user import UserRepo
 from backend.api.std import sql
 
 
@@ -68,6 +69,28 @@ class RoomRepo:
         with sql.Session() as session:
             return session.scalars(select(Room).where(Room.id == id)).unique().one()
 
+    def find_member_by_user_id(self, room_id: int, user_id) -> Room:
+        """
+        指定したidのメンバ情報を取得
+            Args:
+                room_id: Room のID
+                user_id: メンバのユーザID
+            Returns:
+                Room: 取得したメンバ情報
+        """
+        with sql.Session() as session:
+            return (
+                session.scalars(
+                    select(RoomMember).where(
+                        and_(
+                            RoomMember.room_id == room_id, RoomMember.user_id == user_id
+                        )
+                    )
+                )
+                .unique()
+                .first()
+            )
+
     def find_member_in_target_user(self, member_id: int) -> Sequence[User]:
         """
         指定したユーザIDが含まれるルームメンバー情報取得
@@ -90,25 +113,42 @@ class RoomRepo:
 
             return session.scalars(query).unique().all()
 
-    def create(self, room: Room) -> int:
+    def create(self, room: Room, members: list) -> int:
         """
         ルーム情報を作成
             Args:
                 room: 登録対象のルーム情報クラス
+                members: 登録するメンバ
             Returns:
                 int: 登録したレコードのID
         """
         with sql.Session() as session:
             session.add(room)
+
+            user_repo = UserRepo()
+            for member in members:
+                user = user_repo.find_by_address(member)
+                if user:
+                    room.members.append(RoomMember(user_id=user.id))
+
+                else:
+                    new_user = User()
+                    new_user.mail_address = member
+                    new_user.user_name = member
+                    new_user.hashed_password = member
+                    new_id = user_repo.create(new_user)
+                    room.members.append(RoomMember(user_id=new_id))
+
             session.commit()
             assert room.id is not None
             return room.id
 
-    def update(self, room: Room):
+    def update(self, room: Room, new_members: list):
         """
         ルーム情報を更新
             Args:
                 room: 更新対象のルーム情報クラス
+                members: 登録するメンバ
             Returns:
 
         """
@@ -118,6 +158,37 @@ class RoomRepo:
             )
             current_room.room_name = room.room_name
             current_room.remarks = room.remarks
+
+            # --- 既存のメンバアドレス情報を取得 ---
+            user_repo = UserRepo()
+            existing_members = []
+            for member in current_room.members:
+                user = user_repo.find_by_id(member.user_id)
+                existing_members.append(user.mail_address)
+
+            # --- 削除対象（既存にしかいない）---
+            for member_addr in set(existing_members) - set(new_members):
+                user = user_repo.find_by_address(member_addr)
+                # 現在の Room.members から user_id が一致するオブジェクトを取得
+                member_obj = next(
+                    (m for m in current_room.members if m.user_id == user.id), None
+                )
+                if member_obj:
+                    current_room.members.remove(member_obj)
+
+            # --- 追加対象（新規にしかいない）---
+            for member_addr in set(new_members) - set(existing_members):
+                user = user_repo.find_by_address(member_addr)
+                if user:
+                    current_room.members.append(RoomMember(user_id=user.id))
+                else:
+                    new_user = User()
+                    new_user.mail_address = member_addr
+                    new_user.user_name = member_addr
+                    new_user.hashed_password = member_addr
+                    new_id = user_repo.create(new_user)
+                    current_room.members.append(RoomMember(user_id=new_id))
+
             session.commit()
 
     def delete(self, room: Room):

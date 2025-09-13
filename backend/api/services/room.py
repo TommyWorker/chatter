@@ -88,7 +88,7 @@ def get_selected_lists(login_user_id: id) -> Dict[str, Sequence[User]]:
     }
 
 
-def create_room(room: Room) -> Room:
+def create_room(room: Room, members: list) -> Room:
     """
     ルーム情報 新規登録
         Args:
@@ -98,11 +98,11 @@ def create_room(room: Room) -> Room:
     """
 
     room_repo = RoomRepo()
-    room_id = room_repo.create(room)
+    room_id = room_repo.create(room, members)
     return room_repo.find_by_id(room_id)
 
 
-def update_room(room: Room) -> Room:
+def update_room(room: Room, members: list) -> Room:
     """
     ルーム情報 更新
         Args:
@@ -113,6 +113,6 @@ def update_room(room: Room) -> Room:
     """
 
     room_repo = RoomRepo()
-    room_repo.update(room)
+    room_repo.update(room, members)
     assert room.id is not None
     return room_repo.find_by_id(room.id)

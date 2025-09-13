@@ -67,7 +67,7 @@
                             <label for="lst_auth" class="form-label">チャットメンバー入力（複数可）</label>
                             <input type="text" id="sel_member" list="lst_member" class="form-control" placeholder="メールアドレスを選択・入力してEnterクリック" autocomplete="off">
                             <datalist id="lst_member">
-                                {% for member in member_list %}
+                                {% for member in select_member_list %}
                                 <option value="{{ member.mail_address }}" data-username="{{ member.user_name }}"></option>
                                 {% endfor %}
                             </datalist>

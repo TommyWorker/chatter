@@ -34,13 +34,9 @@ class UserRepo:
 
             query = select(User)
             if mail_address:
-                query = query.where(
-                    User.mail_address.contains(mail_address)
-                )
+                query = query.where(User.mail_address.contains(mail_address))
             if user_name:
-                query = query.where(
-                    User.user_name.contains(user_name)
-                )
+                query = query.where(User.user_name.contains(user_name))
             # query = query.where(User.del_flag == 0)
             query = query.order_by(User.del_flag, User.user_name)
 
@@ -54,7 +50,6 @@ class UserRepo:
 
             # 検索実施
             user_list = session.scalars(query).unique().all()
-
 
             return user_list, rec_count
 
@@ -78,7 +73,9 @@ class UserRepo:
                 User: 取得したユーザ情報
         """
         with sql.Session() as session:
-            return session.scalars(select(User).where(User.mail_address == mail_address)).first()
+            return session.scalars(
+                select(User).where(User.mail_address == mail_address)
+            ).first()
 
     def create(self, user: User) -> int:
         """
@@ -125,8 +122,6 @@ class UserRepo:
 
         """
         with sql.Session() as session:
-            current_user = session.scalars(
-                select(User).where(User.id == user.id)
-            ).one()
+            current_user = session.scalars(select(User).where(User.id == user.id)).one()
             session.delete(current_user)
             session.commit()

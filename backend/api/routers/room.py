@@ -120,7 +120,7 @@ def room_form_edit(
     # ルームクラスのインスタンス生成
     e_room = s_room.get_room(p_room_id)
 
-    # メンバーリスト取得
+    # 選択メンバーリスト取得
     select_input_dict = s_room.get_selected_lists(login_user.id)
 
     return templates.TemplateResponse(
@@ -128,13 +128,26 @@ def room_form_edit(
         {
             "request": request,
             "room": e_room,
-            "member_list": select_input_dict["members"],
+            "select_member_list": select_input_dict["members"],
             "mode": mode,
             "result": "",
             "sys_msg": "",
             "login_user": login_user,
         },
     )
+
+
+@router.get("/room/{p_room_id}/{mode}/api")
+def room_set_member(p_room_id: int):
+    """
+    ルーム情報入力画面：ロード（APIコール）
+    """
+    # ルームクラスのインスタンス生成
+    e_room = s_room.get_room(p_room_id)
+
+    return {
+        "members": e_room.members,
+    }
 
 
 @router.post("/room_entry")
@@ -152,22 +165,19 @@ def room_entry(
     # 入力値取得
     e_room.room_name = data.room_name
     e_room.remarks = data.remarks
-    e_room.members.append(RoomMember(user_id=login_user.id))
-    for member in data.members:
-        user = s_room.get_member_by_mail(member)
-        e_room.members.append(RoomMember(user_id=user.id))
+    data.members.append(login_user.mail_address)
 
     # ▼登録処理
     if e_room.id is None:
         # ▼新規
-        e_room = s_room.create_room(e_room)
+        e_room = s_room.create_room(e_room, data.members)
         # リターンコード設定
         sys_msg = "登録処理が正常に完了しました。"
         result = "complete"
 
     else:
         # ▼更新
-        e_room = s_room.update_room(e_room)
+        e_room = s_room.update_room(e_room, data.members)
         # リターンコード設定
         sys_msg = "更新処理が正常に完了しました。"
         result = "complete"
