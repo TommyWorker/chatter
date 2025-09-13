@@ -106,7 +106,8 @@ class SecurityHeaderMiddleware(BaseHTTPMiddleware):
                     headers={"WWW-Authenticate": "Basic"},
                 )
             else:
-                raise Exception()
+                log.error(f"HTTPException: {h_exc.detail}")
+                raise
 
 
 # SecurityHeaderMiddleware を追加
@@ -144,6 +145,14 @@ async def logout(request: Request):
         "system_info.html",
         {"request": request, "title": "ログアウト", "message": "ログアウトしました。"},
     )
+
+
+@app.get("/healthcheck")
+def healthcheck():
+    """
+    ECSのヘルスチェック用エンドポイント
+    """
+    return {"message": "healthcheck"}
 
 
 def drop_all_fk():
@@ -282,29 +291,21 @@ async def authorization_exception_handler(
     """AuthorizationExceptionが発生した場合はエラーページを表示する"""
     return templates.TemplateResponse(
         "system_info.html",
-        {
-            "request": request,
-            "title": "認可エラー",
-            "message": "ご利用のアカウントには本システムの利用権限がありません。\n"
-            "お手数ですが、以下のエラータイプを添えてシステム管理者へお問い合わせをお願いいたします。\n\n"
-            f"エラータイプ: {exc.error_type}",
-        },
+        {"request": request, "title": "認可エラー", "message": "権限がありません。"},
     )
 
 
 @app.exception_handler(Exception)
-async def http_exception_handler(request: Request, exc: Exception):
+async def general_exception_handler(request: Request, exc: Exception):
     """
     例外エラー処理
     """
-    # 例外情報を取得
-    message = func.get_exc_info(os.getenv("APP_ENV") or "")
+    # 本番では汎用メッセージ、開発環境のみ詳細表示
+    is_dev = os.getenv("APP_ENV") == "dev"
+    message = func.get_exc_info() if is_dev else "想定外のエラーが発生しました。"
+    log.error(f"Exception: {exc}")
 
     return templates.TemplateResponse(
         "system_info.html",
-        {
-            "request": request,
-            "title": "想定外のエラーが発生しました",
-            "message": message,
-        },
+        {"request": request, "title": "エラー", "message": message},
     )
