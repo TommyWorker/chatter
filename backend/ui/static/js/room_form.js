@@ -60,7 +60,7 @@ function addMemberTag(mail, username = "") {
 // ページロード
 function page_init(){
 
-    fetch("/room/" + room_id.value + "/edit/api")
+    fetch("/room/" + room_id.value + "/api")
     .then(res => res.json())
     .then(data => {
         loadMembers(data.members);
@@ -80,11 +80,6 @@ function loadMembers(membersData) {
 // 登録ボタン押下時
 function send_data() {
 
-    // 入力チェック
-    if (!entry_check()) {
-        return false;
-    } 
-
     // 入力値取得
     const room_id = document.getElementById("hdn_room_id").value
     const room_name = document.getElementById("txt_room_name").value
@@ -93,6 +88,10 @@ function send_data() {
     const members = Array.from(document.querySelectorAll('input[name="members[]"]'))
                      .map(input => input.value);
 
+    // 入力チェック
+    if (!entry_check(members)) {
+        return false;
+    } 
 
     fetch("/room_entry", {
         method: "POST",
@@ -136,7 +135,12 @@ function member_add_check(mail) {
 
 
 // 登録時入力チェック処理
-function entry_check() {
+function entry_check(members) {
+
+    if (members.length === 0){
+        disp_alert("メンバーを１人以上追加してください。", "div_message_area");
+        return false;
+    }
 
     // エラーなし・正常終了
     return true;

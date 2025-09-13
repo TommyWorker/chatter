@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>チャットルーム</title>
 
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="/static/icon/bootstrap-icons-1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="/static/css/custom.css" rel="stylesheet">
 </head>
@@ -14,7 +14,7 @@
 <body onload="page_init();">
 <div class="d-flex">
     <!-- サイドバー -->
-    {{ c.common_sidebar(login_user, mode | default("")) }}
+    {{ c.common_sidebar(login_user | default("")) }}
 
     <!-- メインコンテンツ -->
     <div class="flex-grow-1 p-3">
@@ -44,10 +44,10 @@
                 <!-- ヘッダー部 -->
                 <div class="m-3 bg-white w-75 border-bottom border-dark row">
                     <div class="col-auto">
-                        {% if mode=="new"%}
-                        <h3>チャットルーム 登録</h3>
-                        {% elif mode=="edit" %}
-                        <h3>チャットルーム 編集</h3>
+                        {% if room.id %}
+                            <h3>チャットルーム 編集</h3>
+                        {% else %}
+                            <h3>チャットルーム 登録</h3>
                         {% endif %}
                     </div>
                     <div class="col text-end">
@@ -117,7 +117,7 @@
     </div>
 </div>
 
-<script src="/static/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="/static/js/common.js"></script>
 <script src="/static/js/room_form.js"></script>
 

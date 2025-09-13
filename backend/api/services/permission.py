@@ -15,6 +15,12 @@ def create_path_table():
     # 一般利用者がアクセスできるページ
     for_all_user = [
         r"^/$",
+        r"^/room/list$",
+        r"^/room/\d{1,10}/form$",
+        r"^/room/\d{1,10}/api$",
+        r"^/room_entry$",
+        r"^/chat/\d{1,10}/form$",
+        r"^/chat/\d{1,10}/api$",
         r"^/user/\d{1,10}/disp$",
         r"^/user/\d{1,10}/edit$",
         r"^/user_entry$",

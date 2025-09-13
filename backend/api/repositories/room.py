@@ -203,3 +203,15 @@ class RoomRepo:
             current_room = session.scalars(select(Room).where(Room.id == room.id)).one()
             session.delete(current_room)
             session.commit()
+
+    def entry_message(self, room_message: RoomMessage):
+        """
+        ルーム情報を作成
+            Args:
+                room_message: メッセージ情報
+            Returns:
+
+        """
+        with sql.Session() as session:
+            session.add(room_message)
+            session.commit()

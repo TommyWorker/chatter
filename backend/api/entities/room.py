@@ -21,7 +21,13 @@ class Room(Base):
     remarks: Mapped[str] = mapped_column(Unicode(500), nullable=True)
     """備考"""
 
-    # メンバーへリレーション
+    # リレーション
     members = relationship(
         "RoomMember", back_populates="room", lazy="joined", cascade="all, delete-orphan"
+    )
+    messages = relationship(
+        "RoomMessage",
+        back_populates="room",
+        lazy="joined",
+        cascade="all, delete-orphan",
     )

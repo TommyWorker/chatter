@@ -7,7 +7,7 @@
 
     <title>ルーム一覧</title>
 
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="/static/icon/bootstrap-icons-1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="/static/css/custom.css" rel="stylesheet">
 
@@ -16,7 +16,7 @@
 <body>
 <div class="d-flex">
     <!-- サイドバー -->
-    {{ c.common_sidebar(login_user, mode | default("")) }}
+    {{ c.common_sidebar(login_user | default("")) }}
 
     <!-- メインコンテンツ -->
     <div class="flex-grow-1 p-4">
@@ -37,13 +37,11 @@
                 <div class="col-auto">
                     <h3>ルーム一覧</h3>
                 </div>
-                {% if login_user.authority_code == 99 %}
                 <div class="col text-end">
-                    <a class="btn btn-primary btn-sm mb-2 px-4" href="/room/new" role="button">
+                    <a class="btn btn-primary btn-sm mb-2 px-4" href="/room/0/form" role="button">
                         <i class="bi bi-pencil-square"></i> 新規登録
                     </a>
                 </div>
-                {% endif %}
             </div>
 
             <!-- 検索条件 -->
@@ -100,22 +98,27 @@
                             <th scope="col" class="text-nowrap p-2">編集</th>
                             <th scope="col" class="text-nowrap p-2">ルーム名</th>
                             <th scope="col" class="text-nowrap p-2">備考</th>
-                            <th scope="col" class="text-nowrap p-2">最終更新日</th>
+                            <th scope="col" class="text-nowrap p-2">最終更新日時</th>
                         </tr>
                     </thead>
                     <tbody class="table-group-divider">
                         {% for room in room_list %}
                         <tr class="">
                             <td class="text-center align-middle text-nowrap p-1">
-                                <a href="/room/{{room.id}}/edit" role="button"
+                                <a href="/room/{{room.id}}/form" role="button"
                                     class="btn btn-outline-primary btn-sm link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
                             </td>
-                            <td class="p-1 align-middle multi-line">{{room.room_name or ''}}</td>
+                            <th scope="row" class="text-nowrap p-1 align-middle">
+                                <a href="/chat/{{room.id}}/form"
+                                    class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                                    {{ room.room_name or (room.members | map(attribute='user.mail_address') | join(',')) }}
+                                </a>
+                            </th>
                             <td class="p-1 align-middle multi-line">{{room.remarks or ''}}</td>
                             {% if room.update_date is not none %}
-                            <td class="p-1 align-middle">{{room.update_date.strftime('%Y-%m-%d')}}</td>
+                            <td class="p-1 align-middle">{{room.update_date.strftime('%Y-%m-%d %H:%M:%S')}}</td>
                             {% else %}
                             <td class="p-1 align-middle"></td>
                             {% endif %}
@@ -134,7 +137,7 @@
     </div>
 </div>
 
-<script src="/static/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="/static/js/common.js"></script>
 <script src="/static/js/room_list.js"></script>
 

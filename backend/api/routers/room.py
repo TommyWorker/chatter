@@ -1,20 +1,19 @@
 import math
 from datetime import datetime
 from os import getenv
-from typing import List, Optional
+from typing import Dict, List, Optional
 from urllib.parse import unquote
 
-from fastapi import APIRouter, Cookie, Depends, Form, Request
+from fastapi import APIRouter, Cookie, Depends, Request, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from backend.api.entities.room import Room
-from backend.api.entities.room_member import RoomMember
+from backend.api.entities.room_message import RoomMessage
 from backend.api.entities.user import User
 from backend.api.services import auth
 from backend.api.services import room as s_room
-from backend.api.std import define, func
+from backend.api.std import define
 
 
 # ルーム登録時の受信データのスキーマを定義
@@ -98,19 +97,10 @@ def room_list(
     )
 
 
-@router.get("/room/new")
-def room_form_new(
-    request: Request,
-    login_user: User = Depends(auth.check_auth),
-):
-    return room_form_edit(request, 0, "new", login_user=login_user)
-
-
-@router.get("/room/{p_room_id}/{mode}")
-def room_form_edit(
+@router.get("/room/{p_room_id}/form")
+def room_form(
     request: Request,
     p_room_id: int,
-    mode: str,
     login_user: User = Depends(auth.check_auth),
 ):
     """
@@ -129,7 +119,6 @@ def room_form_edit(
             "request": request,
             "room": e_room,
             "select_member_list": select_input_dict["members"],
-            "mode": mode,
             "result": "",
             "sys_msg": "",
             "login_user": login_user,
@@ -137,7 +126,7 @@ def room_form_edit(
     )
 
 
-@router.get("/room/{p_room_id}/{mode}/api")
+@router.get("/room/{p_room_id}/api")
 def room_set_member(p_room_id: int):
     """
     ルーム情報入力画面：ロード（APIコール）
@@ -165,7 +154,9 @@ def room_entry(
     # 入力値取得
     e_room.room_name = data.room_name
     e_room.remarks = data.remarks
-    data.members.append(login_user.mail_address)
+    ## ログイン者が存在しなかったら追加
+    if login_user.mail_address not in data.members:
+        data.members.append(login_user.mail_address)
 
     # ▼登録処理
     if e_room.id is None:

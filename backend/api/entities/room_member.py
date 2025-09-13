@@ -28,8 +28,5 @@ class RoomMember(Base):
     # ルームへリレーション
     room = relationship("Room", back_populates="members")
 
-    # メッセージへリレーション
-    messages = relationship("RoomMessage", back_populates="members")
-
     # ユーザへリレーション
-    user = relationship("User", back_populates="members", lazy="joined")
+    user = relationship("User", lazy="joined")

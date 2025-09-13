@@ -7,6 +7,7 @@ from backend.api.entities.base import Base
     ユーザマスタ
 """
 
+
 class User(Base):
 
     __tablename__ = "m_user"
@@ -33,6 +34,3 @@ class User(Base):
         viewonly=True,
         primaryjoin="and_(General.category == 'authority_code', foreign(General.code) == User.authority_code)",
     )
-    
-    # メンバーへリレーション
-    members = relationship("RoomMember", back_populates="user")

@@ -116,3 +116,15 @@ def update_room(room: Room, members: list) -> Room:
     room_repo.update(room, members)
     assert room.id is not None
     return room_repo.find_by_id(room.id)
+
+
+def entry_message(room_message: RoomMessage):
+    """
+    メッセージ登録
+        Args:
+            room_message: メッセージ情報
+        Returns:
+
+    """
+    room_repo = RoomRepo()
+    room_repo.entry_message(room_message)

@@ -1,4 +1,4 @@
-{% macro common_sidebar(login_user, mode) -%}
+{% macro common_sidebar(login_user) -%}
 <div class="d-flex flex-column flex-shrink-0 p-3 text-bg-dark" style="width: 220px; height: 100vh; ">
   <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
     <h2 class="fs-4">Chatter</h2>
