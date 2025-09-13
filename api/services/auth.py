@@ -54,7 +54,7 @@ async def get_user_info(request: Request) -> str:
         )
     mail_address = credentials.username
     try:
-        login_user = UserRepo().find_by_account(mail_address)
+        login_user = UserRepo().find_by_address(mail_address)
         user_name = login_user.user_name if login_user is not None else ""
 
     except Exception:

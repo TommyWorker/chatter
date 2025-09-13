@@ -1,18 +1,27 @@
 import importlib
 import os
 from pathlib import Path
+from typing import Awaitable, Callable
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.responses import Response
 
 from api.entities.base import Base
 from api.entities.user import User
 from api.services import auth
 from api.std import func, sql
-from exceptions import AuthenticationException, AuthorizationException
+from api.std.logging import log
+from exceptions import (
+    AuthenticationException,
+    AuthorizationException,
+    NotPermittedException,
+)
 
 # 環境変数を.evnより設定
 load_dotenv(override=True)
@@ -26,6 +35,7 @@ templates = Jinja2Templates(directory=base_dir / "ui/templates")
 router_directory = base_dir / "api/routers"
 module_prefix = "api.routers."
 
+
 # 各ルーターモジュールをInclude
 for filepath in router_directory.glob("*.py"):
     if not filepath.name.startswith("__"):
@@ -35,8 +45,88 @@ for filepath in router_directory.glob("*.py"):
             app.include_router(module.router)
 
 
+# セキュリティ強化のためのミドルウェア
+class SecurityHeaderMiddleware(BaseHTTPMiddleware):
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+
+        try:
+
+            # アクセスログ記録
+            log.info(
+                f"{await auth.get_user_info(request)} - {request.method} {request.url}"
+            )
+
+            # クロスサイトリクエストフォージェリ（CSRF）攻撃に対する対策
+            #   リクエストのクッキーから"strict"という名前のクッキーを取得し、その値をrequest.state.strictに保存。
+            request.state.strict = request.cookies.get("strict", None)
+            #   POSTおよびDELETEメソッドでかつstrictクッキーが存在しない場合は例外発生
+            if (
+                request.method == "POST" or request.method == "DELETE"
+            ) and not request.state.strict:
+                raise NotPermittedException()
+
+            # エンドポイント呼び出し
+            response = await call_next(request)
+
+            # Cookieを設定
+            #   SameSite属性: samesite="strict"を設定することで、クッキーが同一サイトからのリクエストに対してのみ送信されるようにする。
+            #                これにより、クロスサイトリクエストフォージェリ（CSRF）攻撃を防ぐ。
+            #   HttpOnly属性: httponly=Trueを設定することで、クッキーがJavaScriptからアクセスできないようにする。
+            #                これにより、クッキーのセキュリティが向上する。
+            #   Secure属性:   secure=Trueを設定することで、クッキーがHTTPS接続でのみ送信されるようにする。
+            #                これにより、クッキーの盗聴を防ぐ。
+            response.set_cookie(
+                "strict",
+                "strict",
+                (24 * 60 * 60),
+                path="/",
+                samesite="strict",
+                httponly=True,
+                secure=True,
+            )
+
+            # CSPヘッダをレスポンスに追加する
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; script-src-attr 'self' 'unsafe-inline'"
+            )
+
+            # frame のソースを同一サイト内に限定する
+            response.headers["X-Frame-Options"] = "SAMEORIGIN"
+
+            return response
+
+        except HTTPException as h_exc:
+            # 401が発生したら認証ダイアログを表示
+            if h_exc.status_code == 401:
+                return Response(
+                    content=h_exc.detail,
+                    status_code=h_exc.status_code,
+                    headers={"WWW-Authenticate": "Basic"},
+                )
+            else:
+                raise Exception()
+
+
+# SecurityHeaderMiddleware を追加
+app.add_middleware(SecurityHeaderMiddleware)
+
+
+# SessionMiddleware を追加
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SESSION_KEY"),
+    https_only=True,
+)
+
+
 @app.get("/")
-def root(request: Request, login_user: User = Depends(auth.check_auth)):
+async def root(request: Request, login_user: User = Depends(auth.check_auth)):
+    """
+    ルートURL（Topページへリダイレクト）
+    """
+    log.info(f"{await auth.get_user_info(request)} - ログインしました")
     return RedirectResponse("/room/list")
 
 
@@ -45,6 +135,10 @@ async def logout(request: Request):
     """
     ログアウト処理
     """
+    log.info(f"{await auth.get_user_info(request)} - ログアウトしました")
+
+    # セッション情報をクリアする
+    request.session.clear()
 
     return templates.TemplateResponse(
         "system_info.html",
