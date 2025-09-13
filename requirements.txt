@@ -14,6 +14,7 @@ fastapi==0.115.11
 fonttools==4.57.0
 greenlet==3.1.1
 h11==0.14.0
+httptools==0.6.4
 idna==3.10
 itsdangerous==2.2.0
 Jinja2==3.1.6
@@ -26,6 +27,7 @@ packaging==25.0
 pillow==11.2.1
 pipreqs==0.4.13
 playwright==1.51.0
+psycopg2-binary==2.9.10
 pycparser==2.22
 pydantic==2.10.6
 pydantic_core==2.27.2
@@ -36,6 +38,7 @@ pyparsing==3.2.3
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-multipart==0.0.20
+PyYAML==6.0.2
 requests==2.32.3
 six==1.17.0
 sniffio==1.3.1
@@ -45,4 +48,7 @@ types-openpyxl==3.1.5.20250306
 typing_extensions==4.12.2
 urllib3==2.3.0
 uvicorn==0.34.0
+uvloop==0.21.0
+watchfiles==1.1.0
+websockets==15.0.1
 yarg==0.1.10

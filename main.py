@@ -24,7 +24,7 @@ base_dir = Path(__file__).resolve().parent
 app.mount("/static", StaticFiles(directory=base_dir / "ui/static"), name="static")
 templates = Jinja2Templates(directory=base_dir / "ui/templates")
 router_directory = base_dir / "api/routers"
-module_prefix = base_dir.name + ".api.routers."
+module_prefix = "api.routers."
 
 # 各ルーターモジュールをInclude
 for filepath in router_directory.glob("*.py"):
