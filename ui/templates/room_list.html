@@ -113,7 +113,7 @@
                             <th scope="row" class="text-nowrap p-1 align-middle">
                                 <a href="/chat/{{room.id}}/form"
                                     class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
-                                    {{ room.room_name or (room.members | map(attribute='user.mail_address') | join(',')) }}
+                                    {{ room.room_name or (room.members | map(attribute='user.user_name') | join(',')) }}
                                 </a>
                             </th>
                             <td class="p-1 align-middle multi-line">{{room.remarks or ''}}</td>

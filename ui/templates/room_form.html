@@ -104,15 +104,17 @@
                                     {{room.update_date.strftime('%Y-%m-%d %H:%M')}}
                                 {% endif %}</label>
                         </div>
-                        <!-- Topへ戻るボタン -->
-                        <button id="scrollToTopBtn" class="btn" type="button"><i class="bi bi-arrow-up"></i></button>
                     </div>
-
-                    <!-- 隠しフィールド -->
-                    <input type="hidden" class="form-control" value="{{room.id or ''}}" id="hdn_room_id" name="hdn_room_id">
-                    <div id="membershidden_container"></div> <!-- メンバを設定 -->
                 </div>
             </div>
+
+            <!-- Topへ戻るボタン -->
+            <button id="scrollToTopBtn" class="btn" type="button"><i class="bi bi-arrow-up"></i></button>
+
+            <!-- 隠しフィールド -->
+            <input type="hidden" class="form-control" value="{{room.id or ''}}" id="hdn_room_id" name="hdn_room_id">
+            <div id="membershidden_container"></div> <!-- メンバを設定 -->
+
         </form>
     </div>
 </div>

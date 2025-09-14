@@ -45,18 +45,12 @@ def room_list(
     txt_room_name = unquote(txt_room_name)
 
     # 検索処理実施
-    if hdn_page_no != 0:
-        room_list, rec_count = s_room.find_rooms(
-            txt_room_name,
-            login_user.id,
-            (hdn_page_no - 1) * sel_row_max,
-            sel_row_max,
-        )
-    else:
-        # 初回ロード時
-        rec_count = 0
-        hdn_page_no = 1
-        room_list = []
+    room_list, rec_count = s_room.find_rooms(
+        txt_room_name,
+        login_user.id,
+        (hdn_page_no - 1) * sel_row_max,
+        sel_row_max,
+    )
 
     # ▼検索処理
     # 一覧のスタートページ
