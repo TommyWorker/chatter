@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 from urllib.parse import unquote
 
 from fastapi import APIRouter, Cookie, Depends, Request, WebSocket, WebSocketDisconnect
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -172,3 +173,22 @@ def room_entry(
         "sys_msg": sys_msg,
         "login_user": login_user,
     }
+
+
+@router.get("/room/{p_room_id}/delete")
+def room_form(
+    request: Request,
+    p_room_id: int,
+    login_user: User = Depends(auth.check_auth),
+):
+    """
+    ルーム情報入力画面：ロード
+    """
+
+    # ルームクラスのインスタンス生成
+    e_room = s_room.get_room(p_room_id)
+
+    # 削除処理実施
+    s_room.delete_room(e_room)
+
+    return RedirectResponse("/room/list")

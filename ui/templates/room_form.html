@@ -96,13 +96,16 @@
                         </div>
                     </div>
                     <div class="row m-4">
-                        <div class="form-group">
+                        <div class="form-group col-6">
                             <label>最終更新者：{% if room.update_user is not none %}{{room.update_user}}{% endif %}</label>
-                        </div>
-                        <div class="form-group">
                             <label>最終更新日時：{% if room.update_date is not none %}
                                     {{room.update_date.strftime('%Y-%m-%d %H:%M')}}
                                 {% endif %}</label>
+                        </div>
+                        <div class="form-group col-6">
+                            <button type="button" class="btn btn-outline-danger btn-sm mb-2 px-4" id="btnDelete" onclick="delete_room();">
+                                <i class="bi bi-trash"></i> 削 除
+                            </button>
                         </div>
                     </div>
                 </div>

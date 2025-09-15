@@ -200,7 +200,9 @@ class RoomRepo:
 
         """
         with sql.Session() as session:
-            current_room = session.scalars(select(Room).where(Room.id == room.id)).one()
+            current_room = (
+                session.scalars(select(Room).where(Room.id == room.id)).unique().one()
+            )
             session.delete(current_room)
             session.commit()
 

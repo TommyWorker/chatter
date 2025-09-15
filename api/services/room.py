@@ -118,6 +118,18 @@ def update_room(room: Room, members: list) -> Room:
     return room_repo.find_by_id(room.id)
 
 
+def delete_room(room: Room):
+    """
+    ルーム情報 削除
+        Args:
+            room: 削除するルーム情報
+        Returns:
+
+    """
+    room_repo = RoomRepo()
+    room_repo.delete(room)
+
+
 def entry_message(room_message: RoomMessage):
     """
     メッセージ登録

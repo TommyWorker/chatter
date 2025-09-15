@@ -145,3 +145,15 @@ function entry_check(members) {
     // エラーなし・正常終了
     return true;
 }
+
+// 登録時入力チェック処理
+function delete_room() {
+
+    // 確認メッセージを表示
+    const result = confirm("ルーム情報を削除します。よろしいですか？");
+
+    if (result) {
+        // OKを押したら画面遷移
+        window.location.href = "/room/" + room_id.value + "/delete";
+    }
+}
